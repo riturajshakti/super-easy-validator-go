@@ -1,7 +1,6 @@
 // Package validator validates data against rules written as plain strings.
 //
-// It is the Go port of the npm package super-easy-validator. Rules are
-// strings, not builder chains or struct tags:
+// Rules are strings, not builder chains or struct tags:
 //
 //	rules := validator.Rules{
 //		"name":  "fullname",
@@ -20,12 +19,11 @@
 //
 // # Data
 //
-// Data is map[string]any, the direct analogue of the JavaScript object the
-// original package validates. An absent key means "undefined" and a key
-// present with a nil value means "null"; optional keys off the first and
-// nullable off the second, so the two are distinct. Structs are not accepted,
-// because encoding/json collapses null and missing into the same nil pointer
-// and the distinction would be lost. Marshal a struct to a map first.
+// Data is map[string]any, the shape encoding/json produces. An absent key and
+// a key present with a nil value are distinct states: optional keys off the
+// first and nullable off the second. Structs are not accepted, because
+// encoding/json collapses null and missing into the same nil pointer and the
+// distinction would be lost. Marshal a struct to a map first.
 //
 // # Numbers
 //
@@ -40,14 +38,14 @@
 //
 // # Regular expressions
 //
-// Patterns are written in JavaScript literal form and translated
+// Patterns may be written in literal form, /pattern/flags, and are translated
 // automatically:
 //
 //	regex:/^[A-Z0-9]{128}$/i   ->   (?i)^[A-Z0-9]{128}$
 //
 // Go's regexp is RE2, which has no backtracking, so lookahead, lookbehind and
 // backreferences are reported as rule errors rather than silently never
-// matching. See LIMITATIONS.md.
+// matching.
 //
 // # Error ordering
 //

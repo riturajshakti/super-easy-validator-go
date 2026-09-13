@@ -192,8 +192,8 @@ func resolveIndexed(data Data, key string) (value any, labels []string, present 
 	return current, sliceLabels, true
 }
 
-// sliceRange mirrors JavaScript's Array.prototype.slice, including negative
-// offsets and clamping.
+// sliceRange selects a half-open range, supporting negative offsets counted
+// from the end and clamping out-of-range bounds.
 func sliceRange(elems []any, from, to int) []any {
 	n := len(elems)
 	start, end := from, to

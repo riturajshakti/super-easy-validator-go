@@ -4,8 +4,7 @@ import "testing"
 
 // Malformed rules are programmer errors, not validation failures. Every case
 // here must be reported as an *InvalidRuleError rather than silently ignored
-// or treated as a failed validation. The positions mirror the npm package's
-// operators/switch/malformed test files.
+// or treated as a failed validation.
 
 // --- an unknown rule, in every position it can hide -----------------------
 

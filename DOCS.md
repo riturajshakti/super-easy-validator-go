@@ -1,11 +1,9 @@
 # super-easy-validator-go — Full Documentation
 
-The Go port of the npm package [super-easy-validator](https://github.com/riturajshakti/super-easy-validator).
-
 - [Guide](#guide) — how each feature works, with runnable examples
 - [Reference](#reference) — every rule, one entry each
 - [Error codes](#error-codes) — the full code vocabulary
-- [Differences from npm](#differences-from-the-npm-package)
+- [Known constraints](#known-constraints)
 
 ```sh
 go get github.com/riturajshakti/super-easy-validator-go
@@ -62,7 +60,7 @@ type Detail struct {
 
 `Errors` is `nil` when everything passed. `Errors` and `Details` are the same length and index-aligned: `Errors[i] == Details[i].Message`.
 
-`Detail.Field` is the Go port's addition — npm has no equivalent. It carries the field path without parsing it back out of the message, which is what you want for a JSON API response:
+`Detail.Field` carries the field path, so you need not parse it back out of the message — which is what you want for a JSON API response:
 
 ```go
 result, _ := validator.Validate(validator.Rules{"age": "natural|min:18"}, validator.Data{"age": 15})
@@ -198,7 +196,7 @@ Several are overloaded by the value's runtime type — see [`size`](#size), [`mi
 
 ## 8. Regular expressions
 
-Patterns are written in JavaScript literal form and translated for you:
+Patterns may be written in literal form, `/pattern/flags`, and are translated for you:
 
 ```go
 validator.Rules{"hash": `regex:/^[A-Z0-9]{128}$/i`}  // becomes (?i)^[A-Z0-9]{128}$
@@ -416,8 +414,8 @@ Counting is by **presence, not truthiness** — `false` counts as present.
 
 ## 13. Operators
 
-Operators are **map keys**, exactly as in the npm package. A rule value whose
-single key is `$or`, `$and` or `$switch` is an operator node:
+Operators are **map keys**. A rule value whose single key is `$or`, `$and` or
+`$switch` is an operator node:
 
 ```go
 validator.Rules{"id": validator.Rules{"$or": []any{"objectid", "uuid"}}}
@@ -541,16 +539,13 @@ element), and as a branch of `$or`, `$and`, or as a `$switch` `case` or `then`.
 
 ### The return contract
 
-The npm package accepts any return value and throws on a malformed one — `true`,
-a string, or an object missing `message` or `code`. In Go the signature makes
-most of those unrepresentable: a custom rule returns `*RuleError` or nothing, so
-the compiler rejects them before the validator ever sees them. Two runtime
-checks remain:
+The signature keeps most mistakes out of reach: a custom rule returns
+`*RuleError` or nothing, so a wrong return type is a compile error rather than a
+runtime surprise. Two runtime checks remain:
 
 - Returning a `RuleError` with an **empty `Message`** is a rule error naming the field.
 - A **panic** inside a custom rule is recovered and reported as a rule error
-  naming the field, rather than crashing the caller — matching npm, which
-  converts a thrown error the same way.
+  naming the field, rather than crashing the caller.
 
 A plain func literal works without the `CustomRule` conversion in most positions:
 
@@ -680,7 +675,7 @@ Code: `NOT_OBJECT`. Accepts `Data` and `map[string]any`. An array is not an obje
 ### `bigint`
 Code: `NOT_BIGINT`. Accepts `*big.Int` and `json.Number`.
 
-Unlike npm, this survives a JSON round trip. Decode with `UseNumber()` to keep integers beyond 2^53 exact:
+An integer beyond 2^53 survives a JSON round trip exactly. Decode with `UseNumber()`:
 ```go
 dec := json.NewDecoder(r)
 dec.UseNumber()
@@ -804,7 +799,7 @@ validator.Rules{"d": "date|min:2024-01-01"}
 The mirror of `min:` — `TOO_LONG`, `TOO_LARGE`, `DATE_TOO_LATE`.
 
 ### `regex:`
-JavaScript literal or Go inline-flag form. Implies `string`. Code: `REGEX_MISMATCH` → `f is invalid`. See [Guide §8](#8-regular-expressions) for the RE2 restriction.
+Literal (`/pattern/flags`) or inline-flag form. Implies `string`. Code: `REGEX_MISMATCH` → `f is invalid`. See [Guide §8](#8-regular-expressions) for the RE2 restriction.
 
 ### `decimalsize:`
 Exactly N digits after the point. Code: `DECIMAL_SIZE_MISMATCH`.
@@ -876,27 +871,21 @@ A custom rule's code is not restricted to this list.
 
 ---
 
-# Differences from the npm package
+# Known constraints
 
-Full detail in [LIMITATIONS.md](LIMITATIONS.md). In summary:
+The behaviours worth knowing before you rely on them:
 
-**Rule vocabulary: 31 of npm's 33 bare rules, and all 11 argument rules.** The two omissions:
+| Area | Behaviour |
+|---|---|
+| Data input | `map[string]any` only; structs are not accepted |
+| Error order | unspecified within one rules level; sort by `Detail.Field` |
+| `regex:` | RE2 — no lookahead, lookbehind or backreferences |
+| String length | counts runes, so an emoji is one character |
+| `NaN` / `Infinity` | valid `number`s, but not integers |
+| Dotted keys | assert their intermediates are objects |
+| Malformed rules | returned as an `error`, never a validation failure |
 
-- **`symbol`** — a JavaScript-only identity primitive with no Go or JSON counterpart. Reported as an unknown rule.
-- **`mongoid`** — npm's own deprecated alias for `objectid`, which emits a deprecation warning there. Since this package starts fresh at v0.1.0, only `objectid` exists.
-
-**Everything else is present**: all data types, string formats, number types, constraints, `arrayof:`, the three operators, `$atleast`/`$atmost`, indexing and slices, custom rules, `field:`/`error:`, and all three config options.
-
-**Behavioural differences:**
-
-| | npm | Go |
-|---|---|---|
-| Data input | JS object | `map[string]any` only (no structs) |
-| Error order | rules declaration order | unspecified within a level |
-| `regex:` | full JS engine | RE2: no lookahead, lookbehind or backreferences |
-| `bigint` | cannot survive JSON | `*big.Int` / `json.Number`, exact |
-| Malformed rule | throws | returned as `error` |
-| Field path | parse from message | `Detail.Field` |
+Every rule listed in the reference above is implemented.
 
 ---
 

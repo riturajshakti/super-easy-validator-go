@@ -1,8 +1,14 @@
 # super-easy-validator-go
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/riturajshakti/super-easy-validator-go.svg)](https://pkg.go.dev/github.com/riturajshakti/super-easy-validator-go)
+[![Release](https://img.shields.io/github/v/tag/riturajshakti/super-easy-validator-go?label=release&sort=semver)](https://github.com/riturajshakti/super-easy-validator-go/tags)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/riturajshakti/super-easy-validator-go)](go.mod)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](go.mod)
+
 **Validate data with rules you write as plain strings.** Zero dependencies, fully typed. No builder chains, no struct tags — just `"optional|email"`.
 
-The Go port of the npm package [super-easy-validator](https://github.com/riturajshakti/super-easy-validator).
+Also available for JavaScript and TypeScript: [super-easy-validator](https://www.npmjs.com/package/super-easy-validator) on npm, [@riturajshakti/super-easy-validator](https://jsr.io/@riturajshakti/super-easy-validator) on JSR.
 
 ```sh
 go get github.com/riturajshakti/super-easy-validator-go
@@ -134,7 +140,7 @@ Slices work too — `"c[0:2]"`, `"c[1:]"`, `"c[-2:]"` — applying the rule to e
 
 `$or` passes if any branch passes. `$and` requires every branch. `$switch` applies one rule, chosen by which `case` matches. Branches accept any rule value: strings, nested rules, tuple rules, functions, or nested operators.
 
-Operators are map keys, exactly as in the npm package:
+Operators are map keys:
 
 ```go
 rules := validator.Rules{
@@ -218,17 +224,17 @@ Callers never reason about bit widths. Integer rules (`int`, `natural`, `whole`)
 
 Integer-ness is decided by value, not static type, so a JSON `7` (decoded as `float64`) satisfies `natural`.
 
-`bigint` accepts `*big.Int` and `json.Number`, so an integer too large for `float64` survives a JSON round trip — something the npm package cannot do.
+`bigint` accepts `*big.Int` and `json.Number`, so an integer beyond `float64` precision survives a JSON round trip exactly.
 
 ## Regular expressions
 
-Patterns are written in JavaScript literal form and translated automatically:
+Patterns may be written in literal form, `/pattern/flags`, and are translated automatically:
 
 ```go
 "regex:/^[A-Z0-9]{128}$/i"   // becomes (?i)^[A-Z0-9]{128}$
 ```
 
-Go's `regexp` is RE2, which has no backtracking. Lookahead, lookbehind and backreferences are reported as rule errors rather than silently never matching. See [LIMITATIONS.md](LIMITATIONS.md).
+Go's `regexp` is RE2, which has no backtracking. Lookahead, lookbehind and backreferences are reported as rule errors rather than silently never matching.
 
 ## Options
 
@@ -247,9 +253,9 @@ validator.Validate(rules, data, validator.Config{
 
 Go randomizes map iteration, so **error order within one rules level is unspecified**. Ordering between nesting levels is stable. Sort by `Detail.Field` when you need deterministic output.
 
-## Differences from the npm package
+## Known constraints
 
-See [LIMITATIONS.md](LIMITATIONS.md) for the full list. In short: `symbol` is not supported, `regex:` cannot use backtracking constructs, error order is unspecified, and input is `map[string]any` rather than also accepting structs.
+`regex:` cannot use backtracking constructs, error order within one rules level is unspecified, and input is `map[string]any` rather than structs. See [DOCS.md](DOCS.md#known-constraints) for the full list.
 
 ## License
 

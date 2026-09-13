@@ -11,8 +11,9 @@ import (
 // Hostile, degenerate and boundary inputs. Nothing here may panic, and every
 // case must produce a definite answer.
 //
-// A few of these differ from the npm package on purpose; each is marked and
-// explained in LIMITATIONS.md.
+// A few of these encode deliberate choices rather than obvious answers —
+// rune-based lengths, NaN and Infinity failing the integer rules, and a dotted
+// key asserting its intermediates are objects. Each is noted at the case.
 
 // --- degenerate rules -----------------------------------------------------
 
@@ -100,8 +101,7 @@ func TestNumericBoundaries(t *testing.T) {
 		ok(t, Rules{"f": "natural"}, Data{"f": 5.0})
 	})
 	t.Run("NaN is a number but not a natural", func(t *testing.T) {
-		// npm accepts NaN for natural; Go rejects it, since NaN is not an
-		// integer value.
+		// NaN is not an integer value, so it fails the integer rules.
 		ok(t, Rules{"f": "number"}, Data{"f": math.NaN()})
 		fails(t, Rules{"f": "natural"}, Data{"f": math.NaN()},
 			[]string{"f must be a valid natural number"})
@@ -114,7 +114,7 @@ func TestNumericBoundaries(t *testing.T) {
 		}
 	})
 	t.Run("infinity is a number but not a natural", func(t *testing.T) {
-		// npm accepts Infinity for natural; Go rejects it.
+		// Infinity is not an integer value either.
 		ok(t, Rules{"f": "number"}, Data{"f": math.Inf(1)})
 		ok(t, Rules{"f": "number"}, Data{"f": math.Inf(-1)})
 		fails(t, Rules{"f": "natural"}, Data{"f": math.Inf(1)},
@@ -165,7 +165,7 @@ func TestStringBoundaries(t *testing.T) {
 		ok(t, Rules{"f": "string|size:3"}, Data{"f": "héllo"[0:0] + "abc"})
 	})
 	t.Run("an emoji counts as one rune", func(t *testing.T) {
-		// npm counts UTF-16 code units, so it sees this as length 2.
+		// Lengths count runes, so an astral-plane character is one.
 		ok(t, Rules{"f": "string|size:1"}, Data{"f": "👍"})
 		fails(t, Rules{"f": "string|size:2"}, Data{"f": "👍"}, []string{"f must have length 2"})
 	})

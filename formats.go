@@ -24,14 +24,13 @@ var (
 	reUpper     = regexp.MustCompile(`^[^a-z]+$`)
 	reIP        = regexp.MustCompile(`^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$`)
 
-	// The npm username pattern uses a lookahead to forbid consecutive "." or
-	// "_". RE2 has no lookahead, so the assertion is applied separately in
-	// isUsername; the observable behaviour is identical.
+	// Forbidding consecutive "." or "_" is a rejection test rather than a
+	// matching one, so it is applied separately in isUsername. RE2 has no
+	// lookahead to express it inline.
 	reUsernameShape = regexp.MustCompile(`^[^\W_][\w.]{6,18}[^\W_]$`)
 
-	// The npm url pattern's (?:www\.|(?!www)) group accepts a www prefix in
-	// one branch and asserts its absence in the other, so together they
-	// constrain nothing and the group is dropped.
+	// A leading "www." is optional and otherwise unconstrained, so it needs no
+	// special-casing in the pattern.
 	reURL = regexp.MustCompile(`^(?:https?://[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]?\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]?\.[^\s]{2,})$`)
 )
 
@@ -58,9 +57,9 @@ var unsupportedRegexConstructs = []struct{ frag, name string }{
 	{"(?<!", "negative lookbehind"},
 }
 
-// compileUserRegex accepts a pattern in JavaScript literal form, /pat/flags,
-// and translates it to Go's inline-flag form so callers write the same rule
-// they would on npm. A pattern already in Go form passes through.
+// compileUserRegex accepts a pattern in literal form, /pat/flags, and
+// translates it to Go's inline-flag form. A pattern already in Go form passes
+// through unchanged.
 func compileUserRegex(pattern string) (*regexp.Regexp, error) {
 	pat := pattern
 

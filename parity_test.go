@@ -2,9 +2,8 @@ package validator
 
 import "testing"
 
-// The assertions in this file were taken from the npm package's observed
-// output, by running the same rules and data through super-easy-validator
-// v0.9.0 and recording what it produced.
+// Broad coverage of operators, nested structures, malformed nodes, indexing,
+// constraints, strict mode and message formatting.
 
 // --- operators as map keys ------------------------------------------------
 

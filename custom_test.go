@@ -2,8 +2,8 @@ package validator
 
 import "testing"
 
-// These assertions mirror the npm package's test/custom.test.js, checked
-// against super-easy-validator v0.9.0's observed output.
+// Custom rules: the return contract, the parent parameter, every position a
+// function may occupy, and how it interacts with the rest of the library.
 
 func evenRule(v, _ any) *RuleError {
 	n, ok := toNumber(v)

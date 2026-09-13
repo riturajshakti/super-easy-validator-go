@@ -11,7 +11,7 @@ import "fmt"
 //	CustomRule          a user-supplied function
 //
 // An operator node is a rule value whose single key is "$or", "$and" or
-// "$switch", exactly as in the npm package:
+// "$switch":
 //
 //	Rules{"id": Rules{"$or": []any{"objectid", "uuid"}}}
 //
@@ -38,9 +38,9 @@ func isOperatorKey(k string) bool {
 	return k == OpOr || k == OpAnd || k == OpSwitch
 }
 
-// Data is the value being validated: the direct analogue of a JavaScript
-// object. A key that is absent means "undefined"; a key present with a nil
-// value means "null". The two are distinct.
+// Data is the value being validated, the shape encoding/json produces. A key
+// that is absent and a key present with a nil value are distinct states:
+// optional keys off the first, nullable off the second.
 type Data map[string]any
 
 // RuleError is returned by a CustomRule to report a failure. A nil return

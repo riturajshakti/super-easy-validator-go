@@ -93,7 +93,7 @@ func findPrefixed(tokens []string, prefix string) (string, bool) {
 }
 
 // customField returns a field: override. It is suppressed for keys ending in
-// an array index, matching npm.
+// an array index, where the index is the meaningful label.
 func customField(tokens []string, key string) (string, bool) {
 	if endsWithIndex(key) {
 		return "", false

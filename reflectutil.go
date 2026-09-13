@@ -4,7 +4,7 @@ import "reflect"
 
 // reflectSlice normalizes a native Go slice or array to []any, so callers may
 // pass []string or []int without converting first. Strings are deliberately
-// excluded: they are not arrays here, matching JavaScript.
+// excluded: a string is not an array here.
 func reflectSlice(v any) ([]any, bool) {
 	rv := reflect.ValueOf(v)
 	switch rv.Kind() {

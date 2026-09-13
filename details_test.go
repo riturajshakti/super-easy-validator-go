@@ -4,8 +4,7 @@ import "testing"
 
 // Codes are the stable half of a validation failure: message text is for
 // humans and may be reworded, codes are meant to be compared against. These
-// assertions pin the code emitted for every rule, mirroring the npm package's
-// details test file.
+// assertions pin the code emitted for every rule.
 
 func singleCode(t *testing.T, rules Rules, data Data, cfg ...Config) ErrorCode {
 	t.Helper()

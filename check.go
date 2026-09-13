@@ -188,8 +188,8 @@ func checkDataType(c *checker, value any, present bool, dataType string, previou
 	}
 }
 
-// isBigint accepts *big.Int and json.Number, so an integer too large for
-// float64 survives a JSON round trip - which it cannot in the npm package.
+// isBigint accepts *big.Int and json.Number, so an integer beyond float64
+// precision survives a JSON round trip exactly.
 func isBigint(value any) bool {
 	switch n := value.(type) {
 	case *big.Int:
@@ -526,8 +526,7 @@ func checkDecimals(c *checker, kind, arg string, value any, str string, isStr bo
 		n = parsed
 	case isNum:
 		if num.isNaN() {
-			// npm's message reads "a value number"; kept verbatim so ported
-			// expectations match.
+			// Wording is deliberate and pinned by tests.
 			c.fail(CodeNotANumber, `"%s" must be a value number`, c.label())
 			return
 		}
